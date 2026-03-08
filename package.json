@@ -4,12 +4,21 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
+    "android": "expo run:android",
     "convex": "convex dev",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "ios": "expo run:ios"
+  },
+  "pnpm": {
+    "overrides": {
+      "expo-crypto": "~15.0.8",
+      "expo-auth-session": "~7.0.10"
+    }
   },
   "dependencies": {
     "@clerk/clerk-expo": "^2.19.30",
+    "expo-auth-session": "~7.0.10",
+    "expo-crypto": "~15.0.8",
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@hugeicons/core-free-icons": "^4.0.0",
