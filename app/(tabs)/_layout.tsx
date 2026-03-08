@@ -1,26 +1,23 @@
 import { useAuth } from '@clerk/clerk-expo';
 import { Home01Icon, Settings01Icon } from '@hugeicons/core-free-icons';
-import { useMutation } from 'convex/react';
 import { Redirect, Tabs } from 'expo-router';
-import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
-import { api } from '@/convex/_generated/api';
 import { usePushNotifications } from '@/hooks/use-push-notifications';
 
 export default function TabLayout() {
-  const { isSignedIn } = useAuth();
-  const upsertUser = useMutation(api.users.upsert);
+  const { isLoaded, isSignedIn } = useAuth();
 
-  // Register for push notifications — hooks must run unconditionally
   usePushNotifications();
 
-  // Sync Clerk user → Convex on mount
-  useEffect(() => {
-    if (isSignedIn) {
-      upsertUser().catch((err) => console.error('Failed to sync user:', err));
-    }
-  }, [isSignedIn, upsertUser]);
+  if (!isLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   if (!isSignedIn) {
     return <Redirect href="/(auth)/sign-in" />;
