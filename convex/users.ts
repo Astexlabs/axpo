@@ -1,43 +1,17 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 
-export const current = query({
+export const currentIdentity = query({
   args: {},
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
-
-    return await ctx.db
-      .query('users')
-      .withIndex('by_clerk_id', (q) => q.eq('clerkId', identity.subject))
-      .unique();
-  },
-});
-
-export const upsert = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error('Unauthenticated');
-
-    const existing = await ctx.db
-      .query('users')
-      .withIndex('by_clerk_id', (q) => q.eq('clerkId', identity.subject))
-      .unique();
-
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        email: identity.email,
-        name: identity.name,
-      });
-      return existing._id;
-    }
-
-    return await ctx.db.insert('users', {
-      clerkId: identity.subject,
+    return {
+      subject: identity.subject,
       email: identity.email,
       name: identity.name,
-    });
+      pictureUrl: identity.pictureUrl,
+    };
   },
 });
 
@@ -47,13 +21,19 @@ export const savePushToken = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error('Unauthenticated');
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_clerk_id', (q) => q.eq('clerkId', identity.subject))
+    const existing = await ctx.db
+      .query('pushTokens')
+      .withIndex('by_subject', (q) => q.eq('subject', identity.subject))
       .unique();
 
-    if (!user) throw new Error('User not found');
+    if (existing) {
+      await ctx.db.patch(existing._id, { pushToken });
+      return existing._id;
+    }
 
-    await ctx.db.patch(user._id, { pushToken });
+    return await ctx.db.insert('pushTokens', {
+      subject: identity.subject,
+      pushToken,
+    });
   },
 });

@@ -9,7 +9,7 @@ import { api } from '@/convex/_generated/api';
 
 export default function HomeScreen() {
   const { user } = useUser();
-  const convexUser = useQuery(api.users.current);
+  const identity = useQuery(api.users.currentIdentity);
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-neutral-950">
@@ -28,19 +28,14 @@ export default function HomeScreen() {
 
         <View className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
           <Text className="mb-2 font-semibold text-neutral-900 dark:text-white">
-            Convex Sync Status
+            Connection Status
           </Text>
-          {convexUser === undefined ? (
+          {identity === undefined ? (
             <Text className="font-sans text-sm text-neutral-500">Loading...</Text>
-          ) : convexUser === null ? (
-            <Text className="font-sans text-sm text-amber-600">Syncing user...</Text>
+          ) : identity === null ? (
+            <Text className="font-sans text-sm text-amber-600">Not authenticated</Text>
           ) : (
-            <>
-              <Text className="font-sans text-sm text-green-600">Connected</Text>
-              <Text className="mt-1 font-sans text-xs text-neutral-500 dark:text-neutral-400">
-                Push token: {convexUser.pushToken ? 'registered' : 'pending'}
-              </Text>
-            </>
+            <Text className="font-sans text-sm text-green-600">Connected</Text>
           )}
         </View>
       </View>
