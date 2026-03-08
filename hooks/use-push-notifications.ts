@@ -66,7 +66,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
 export function usePushNotifications() {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notification, setNotification] = useState<Notifications.Notification | null>(null);
-  const savePushToken = useMutation(api.users.savePushToken);
+  const upsertToken = useMutation(api.deviceTokens.upsertToken);
 
   const notificationListener = useRef<Notifications.EventSubscription | null>(null);
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
@@ -77,7 +77,7 @@ export function usePushNotifications() {
     registerForPushNotificationsAsync().then((token) => {
       if (!mounted || !token) return;
       setExpoPushToken(token);
-      savePushToken({ pushToken: token }).catch((err) =>
+      upsertToken({ pushToken: token }).catch((err) =>
         console.error('Failed to save push token to Convex:', err),
       );
     });
@@ -99,7 +99,7 @@ export function usePushNotifications() {
       notificationListener.current?.remove();
       responseListener.current?.remove();
     };
-  }, [savePushToken]);
+  }, [upsertToken]);
 
   return { expoPushToken, notification };
 }

@@ -1,16 +1,19 @@
 import { useAuth, useUser } from '@clerk/clerk-expo';
-import { Logout01Icon, Mail01Icon, UserIcon } from '@hugeicons/core-free-icons';
+import { Key01Icon, Logout01Icon, Mail01Icon, UserIcon } from '@hugeicons/core-free-icons';
 import { useAction } from 'convex/react';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Icon } from '@/components/ui/icon';
 import { api } from '@/convex/_generated/api';
+import { getAuthErrorMessage } from '@/lib/auth-errors';
 
 export default function SettingsScreen() {
   const { signOut } = useAuth();
   const { user } = useUser();
+  const router = useRouter();
   const sendEmail = useAction(api.emails.send);
   const [sending, setSending] = useState(false);
 
@@ -37,10 +40,26 @@ export default function SettingsScreen() {
     }
   };
 
+  const onCreatePasskey = async () => {
+    try {
+      await user?.createPasskey();
+      Alert.alert('Success', 'Passkey created successfully.');
+    } catch (err: unknown) {
+      Alert.alert('Error', getAuthErrorMessage(err));
+    }
+  };
+
   const onSignOut = () => {
     Alert.alert('Sign out', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign out', style: 'destructive', onPress: () => signOut() },
+      {
+        text: 'Sign out',
+        style: 'destructive',
+        onPress: async () => {
+          await signOut();
+          router.replace('/(auth)/sign-in');
+        },
+      },
     ]);
   };
 
@@ -64,6 +83,8 @@ export default function SettingsScreen() {
         </View>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Send test email"
           className="mb-3 flex-row items-center gap-3 rounded-xl border border-neutral-200 p-4 active:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:active:bg-neutral-900"
           onPress={onTestEmail}
           disabled={sending}
@@ -75,6 +96,18 @@ export default function SettingsScreen() {
         </Pressable>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Create passkey"
+          className="mb-3 flex-row items-center gap-3 rounded-xl border border-neutral-200 p-4 active:bg-neutral-50 dark:border-neutral-800 dark:active:bg-neutral-900"
+          onPress={onCreatePasskey}
+        >
+          <Icon icon={Key01Icon} className="text-blue-600" />
+          <Text className="font-medium text-neutral-900 dark:text-white">Create passkey</Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Sign out"
           className="flex-row items-center gap-3 rounded-xl border border-red-200 p-4 active:bg-red-50 dark:border-red-900/50 dark:active:bg-red-950/30"
           onPress={onSignOut}
         >
